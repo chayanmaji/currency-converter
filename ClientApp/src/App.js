@@ -11,10 +11,24 @@ function App() {
   const [targetCurrency, setTargetCurrency] = useState('USD');
   const [conversionDate, setConversionDate] = useState(()=>{
     let currentDate = new Date();
+    console.log('currentDate.toISOString()', currentDate.toISOString());
+    console.log('currentDate.toString()', currentDate.toString());
     let formattedDate = currentDate.toISOString().substring(0,10);
     return new Date(formattedDate);
   });
   const [conversionRate, setConversionRate] = useState(null);
+
+  const getFormattedDate = (date) => {
+    console.log('date.getMonth()', date.getMonth());
+    let selectedMonth = parseInt(date.getMonth()) + 1;
+    let selectedDay = date.getDate();
+    let year =  date.getFullYear();
+    let month = selectedMonth > 9 ? `${selectedMonth}` : `0${selectedMonth}`;   //  parseInt((date.getMonth() + 1).toString(2);
+    let day = selectedDay > 9 ? `${selectedDay}` : `0${selectedDay}`;
+    let formattedDate = `${ year }-${ month }-${ day }`;
+    console.log('formattedDate', formattedDate);
+    return formattedDate;
+  }
 
   const convertCurrency = () => {
     if (sourceCurrency !== 'CAD' && targetCurrency !== 'CAD')
@@ -30,7 +44,7 @@ function App() {
     const requestBody = {
       sourceCurrency,
       targetCurrency,
-      date : conversionDate.toISOString().substring(0,10)
+      date : getFormattedDate(conversionDate)
     }
     fetch('/api/Exchanges/', 
           {
@@ -42,7 +56,7 @@ function App() {
         })
       .then(response => response.json())
       .then(data => {
-        setConversionRate(data);
+        setConversionRate( parseFloat(data).toFixed(4));
       });
 
   } 
@@ -89,13 +103,18 @@ function App() {
       </select>
     </div>
     <div>
-    <DatePicker dateFormat='yyyy-MM-dd' selected={conversionDate}  maxDate={new Date()} onChange={(date) => setConversionDate(date)} />
+    <DatePicker dateFormat='yyyy-MM-dd' selected={conversionDate}  maxDate={new Date()} 
+        onChange={(date) => {
+                              console.log('date', date); 
+                              setConversionDate(date)
+                            }
+                } />
     </div>
     <div>
       <button type='button' onClick={convertCurrency}>Conversion</button>
     </div>
     <div>
-      <h3>Conversion Rate : {conversionRate}</h3>
+      <h3>Conversion Rate : {  conversionRate}</h3>
     </div>
   </div>
   );
